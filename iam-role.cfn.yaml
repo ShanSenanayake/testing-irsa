@@ -1,0 +1,68 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation template for a IAM role testing IRSA
+
+Parameters:
+  EnvType:
+    Type: String
+  NodeInstanceRole:
+    Type: String
+  OIDC:
+    Description: The OIDC of the cluster allowing the Service Account to access the IAM roles
+    Type: String
+Resources:
+  GladpackServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: irsa-test-role
+      AssumeRolePolicyDocument: !Sub
+        - |
+          {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Principal": {
+                  "Service": [
+                    "ec2.amazonaws.com"
+                  ]
+                },
+                "Action": [
+                  "sts:AssumeRole"
+                ]
+              },
+              {
+                "Effect": "Allow",
+                "Principal": {
+                  "AWS": "${nodeInstanceRole}"
+                },
+                "Action": [
+                  "sts:AssumeRole"
+                ]
+              },
+              {
+                "Effect": "Allow",
+                "Principal": {
+                  "Federated": "arn:aws:iam::${AWS::AccountId}:oidc-provider/${OIDC}"
+                },
+                "Action": [
+                  "sts:AssumeRoleWithWebIdentity"
+                ],
+                "Condition": {
+                  "StringLike": {
+                    "${OIDC}:sub": "system:serviceaccount:${EnvType}:*"
+                  }
+                }
+              }
+            ]
+          }
+        - nodeInstanceRole: !Ref NodeInstanceRole
+      Policies:
+        - PolicyName: irsa-test-s3-policy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                Resource:
+                  - "*"

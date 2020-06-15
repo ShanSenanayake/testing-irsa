@@ -1,0 +1,11 @@
+.git
+aws
+**/node_modules
+Jenkinsfile
+**/.env*.local
+server/.env
+.docker-compose*
+**/.build
+**/dist
+.github
+.vscode

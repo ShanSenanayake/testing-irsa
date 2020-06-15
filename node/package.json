@@ -1,0 +1,12 @@
+{
+  "name": "irsa",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.693.0"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}
